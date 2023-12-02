@@ -1,79 +1,60 @@
 const express = require('express');
-
 const fs = require('fs')
 
 const bodyParser = require('body-parser');
+const app = express();
 
-const app = express(); 
-
-app.use(bodyParser.urlencoded({extended:false}))
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/login', (req, res, next) => {
-    res.send('<form onsubmit="localStorage.setItem("username", document.getElementById("uname").value)" action="/login" method="POST"><input type="text" name="uname"><br><button type="submit">Login</button></form>');
+    res.send('<form action="/login" method="POST" onsubmit="localStorage.setItem(\'username\', document.getElementById(\'uname\').value)"><input type="text" name="uname" id="uname" ><button type="submit">Login</button></form>');
 });
 
 app.post('/login', (req, res, next) => {
-    const username = req.body.uname;
-
-    // Set username in localStorage and redirect to chat page
-    // Replace client-side redirection with server-side redirection
-    res.redirect(`/chat?username=${encodeURIComponent(username)}`);
+    res.redirect('/chat')
 });
 
 app.get('/chat', (req, res, next) => {
-    const username = req.query.username;
+    let chats = [];
 
-    if (!username) {
-        // Redirect to login if username is not set
-        res.redirect('/login');
-    } else {
-        // Display chat form with username and chat content
-        res.send(`
-            <form action="/chat" method="POST">
-                <input type="text" name="msg"><br>
-                <button type="submit">Send</button>
-            </form>
-            <div>
-                <p>Welcome, ${username}!</p>
-                <div id="chat-content">${getChatContent()}</div>
-            </div>
-        `);
+    // Check if the file exists
+    if (fs.existsSync('chats.txt')) {
+        // Read contents of the chats.txt file
+        chats = fs.readFileSync('chats.txt', 'utf8').split('\n').filter(Boolean);
     }
+
+    // Create an HTML string to display chats
+    let chatHTML = '<h2>Chat History</h2>';
+    chatHTML += '<div>';
+    if (chats.length === 0) {
+        chatHTML += '<p>No chat history available.</p>';
+    } else {
+        for (const chat of chats) {
+            const [username, message] = chat.split(':');
+            chatHTML += `<p><strong>${username}:</strong> ${message}</p>`;
+        }
+    }
+    chatHTML += '</div>';
+
+    // Add the message input form
+    chatHTML += '<form action="/chat" method="POST" onsubmit="document.getElementById(\'uname\').value=localStorage.getItem(\'username\')">';
+    chatHTML += '<input type="text" name="msg" id="msg">';
+    chatHTML += '<input type="hidden" name="uname" id="uname">';
+    chatHTML += '<button type="submit">Send</button>';
+    chatHTML += '</form>';
+
+    res.send(chatHTML);
 });
 
 app.post('/chat', (req, res, next) => {
-    const username = req.query.username; // Retrieve username from query parameter
-    const message = req.body.msg;
-
-    if (username && message) {
-        // Append username: message to a file
-        fs.appendFileSync('chatlog.txt', `${username}: ${message}\n`);
-    }
-
-    // Redirect to chat page with username as a query parameter
-    res.redirect(`/chat?username=${username}`);
+    const uname = req.body.uname
+    const msg = req.body.msg
+    fs.appendFileSync('chats.txt',`${uname}:${msg}\n`)
+    res.redirect('/chat')
 });
 
-// Helper function to read chat content from file
-function getChatContent() {
-    try {
-        return fs.readFileSync('chatlog.txt', 'utf8');
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            // Handle case where the file doesn't exist
-            console.error('Chat log file not found.');
-            return '';
-        }
-        console.error('Error reading chat log file:', error.message);
-        return '';
-    }
-}
-
-
-
-app.use((req,res,next) => {
-    res.status(404).send('<h1>Page not found!</h1>')
-})
-
+app.use((req, res, next) => {
+    res.status(404).send('<h1>Page not found!</h1>');
+});
 
 app.listen(3000);
