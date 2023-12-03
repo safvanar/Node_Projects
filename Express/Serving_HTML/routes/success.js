@@ -4,6 +4,6 @@ const successController = require('../controllers/successcontroller')
 
 const router = express.Router()
 
-router.use('/success', successController.successController)
+router.use('/success', successController.successPage)
 
 module.exports = router
