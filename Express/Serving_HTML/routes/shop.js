@@ -1,13 +1,12 @@
-const path = require('path')
-
 const express = require('express')
 
-const rootDir = require('../utils/path')
+const productController = require('../controllers/product')
+//import { getProducts } from '../controllers/product'
+
+//then use getProducts instead of productController.getProducts in line no.10
 
 const router = express.Router()
 
-router.get('/',(req,res,next) =>{
-    res.sendFile(path.join(rootDir,'views','shop.html'))
-} )
+router.get('/', productController.getProducts)
 
 module.exports = router

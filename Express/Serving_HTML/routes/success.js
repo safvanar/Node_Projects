@@ -1,14 +1,9 @@
-const path = require('path')
-
 const express = require('express')
 
-const rootDir = require('../utils/path')
+const successController = require('../controllers/successcontroller')
 
 const router = express.Router()
 
-router.use('/success',(req,res,next) =>{
-    console.log(req.body)
-    res.sendFile(path.join(rootDir,'views','success.html'));
-} )
+router.use('/success', successController.successController)
 
 module.exports = router
