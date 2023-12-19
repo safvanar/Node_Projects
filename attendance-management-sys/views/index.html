@@ -1,0 +1,32 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance App</title>
+  <link rel="stylesheet" href="/css/main.css">
+  
+</head>
+<body>
+  <h1>Attendance App</h1>
+
+  <label for="date">Select Date:</label>
+  <input type="date" id="date" required>
+  <button id = "search-btn">Search</button>
+  <button id = "reportBtn">Fetch Attendance Report</button>
+
+  <table id="reportTable"></table>
+  <form  id="markAttendanceForm">
+  
+    <ul id="attendanceList"></ul>
+
+    <button type="submit" id = "submitBtn">Submit Attendance</button>
+  </form>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script src="/js/script.js"></script>
+ 
+</body>
+</html>
