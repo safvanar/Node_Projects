@@ -4,6 +4,7 @@ const dateInputField = document.querySelector('input')
 const contentRender = document.getElementById('contentRender')
 
 dateForm.addEventListener('submit', fetchAttendance)
+reportBtn.addEventListener('click', fetchReport)
 
 async function fetchAttendance(e){
     e.preventDefault()
@@ -13,7 +14,7 @@ async function fetchAttendance(e){
     if(response.data.status === 'unmarked'){
         // console.log('success')
         const students = response.data.students
-        
+        console.log(students)
         contentRender.innerHTML=''
 
         const contentTitle = document.createElement('h2')
@@ -78,6 +79,7 @@ async function fetchAttendance(e){
                     });
                 }
             });
+            contentRender.innerHTML='Attends Marked successfully!'
 
             // Send the attendance data to the server using your preferred method (e.g., Axios)
             sendAttendanceData(attendanceData);
@@ -85,11 +87,61 @@ async function fetchAttendance(e){
 
         contentRender.appendChild(submitBtn);
 
+    }else{
+        const attendanceData = response.data.attendanceData
+        console.log(attendanceData)
+        contentRender.innerHTML='' 
+        let htmlString = `<h2>Students Present</h2>
+                                <ul>`
+
+        attendanceData.forEach(elem => {
+            if(elem.status === 'present'){
+                htmlString+= `<li>Student ${elem.studentId}</li>`
+            }
+        })
+        htmlString+= `</ul>`
+
+        htmlString+=`<h2>Students Absent</h2>
+                            <ul>`
+
+        attendanceData.forEach(elem => {
+            if(elem.status === 'absent'){
+                htmlString+= `<li>Student ${elem.studentId}</li>`
+            }
+        })         
+        
+        htmlString+= `</ul>`
+
+        contentRender.innerHTML=htmlString
     }
             
 }
 
 async function sendAttendanceData(attendanceData){
-    const response = await axios.post('/attendance/markAttendance', attendanceData)
-    
+    const response = await axios.post('/attendance/markAttendance', {attendanceData})
+}
+
+async function fetchReport(e){
+    e.preventDefault()
+    const response = await axios.get('/attendance/getReport')
+    const students = response.data.students
+    let htmlText = `<h2>Student Attendance Report</h2>
+                        <table>
+                        <tr>
+                            <th>Student</th>
+                            <th>Present Day</th>
+                            <th>Total Days</th>
+                            <th>Percentage</th>
+                        </tr>`
+    students.forEach(student => {
+        htmlText += `<tr>
+                        <td>${student.name}</td>
+                        <td>${student.daysPresent}</td>
+                        <td>${student.totalDays}</td>
+                        <td>${((student.daysPresent/student.totalDays)*100).toFixed(2)}%</td>
+                    </tr>`
+    })
+    htmlText += `</table>`
+
+    contentRender.innerHTML = htmlText
 }

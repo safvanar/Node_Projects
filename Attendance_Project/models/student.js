@@ -14,6 +14,9 @@ const Student = sequelize.define('student', {
     },
     daysPresent: {
         type: Sequelize.INTEGER,
+    },
+    totalDays: {
+        type: Sequelize.INTEGER,
     }
 })
 

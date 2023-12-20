@@ -1,3 +1,9 @@
 ul {
     list-style: none;
 }
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center; /* Center align text in all cells */
+}

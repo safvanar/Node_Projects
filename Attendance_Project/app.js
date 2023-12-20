@@ -27,10 +27,11 @@ async function initiate(){
     try{
         await sequelize.sync()
         //Create 10 students
-        // for (let i = 1; i <= 10; i++) {
+        // for (let i = 1; i <= 5; i++) {
         //     await Student.create({
         //         name: `Student ${i}`,
-        //         daysPresent: 0
+        //         daysPresent: 0,
+        //         totalDays: 0
         //     });
         // }
         app.listen(5000, () => {
