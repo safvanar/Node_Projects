@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const Table = require('./models/table')
 
-const dbRouter = require('./routes/dbRoutes')
+// const dbRouter = require('./routes/dbRoutes')
 
 const app = express()
 
@@ -14,7 +14,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended:false}));
 app.use(express.static('public'))
 
-app.use('/db', dbRouter)
+// app.use('/db', dbRouter)
 
 app.use((req, res, next) => {
     res.sendFile('index.html', {root:'views'})
