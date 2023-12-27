@@ -4,22 +4,24 @@ const Expense = require('../models/expenseModel')
 
 const User = require('../models/users')
 
-exports.postAddExpense = (req, res, next) => {
-    const amount = req.body.expenseAmount
-    const title = req.body.expenseTitle
-    const category = req.body.expenseCategory
+exports.postAddExpense = async (req, res, next) => {
+    try{
+        const userId = req.body.userId
+        const amount = req.body.expenseAmount
+        const title = req.body.expenseTitle
+        const category = req.body.expenseCategory
 
-    Expense.create({
-        title: title,
-        amount: amount,
-        category: category
-    })
-    .then(result => {
+        console.log("user: " + userId)
+        await Expense.create({
+            title: title,
+            amount: amount,
+            category: category,
+            userId: userId
+        })
         res.status(201).redirect('/')
-    })
-    .catch(err => {
-        console.log(err)
-    })
+    }catch(err){
+        res.status(500).json({message: 'server side error'})
+    } 
 }
 
 exports.getExpenses = (req, res, next) => {

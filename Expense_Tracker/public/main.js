@@ -5,6 +5,7 @@ myForm.addEventListener('submit', addExpense)
 document.addEventListener('DOMContentLoaded', domLoad)
 
 function domLoad(){
+    let total = 0
     axios.get('/expense/get-expenses')
         .then(response => {
             const data = response.data
@@ -14,6 +15,7 @@ function domLoad(){
             expList.innerHTML = ''
 
             expenses.forEach(expense => {
+                total += expense.amount
                 let newExpense=document.createElement('li')
                 newExpense.className="list-group-item"
                 newExpense.innerHTML=`${expense.title}::${expense.amount}::${expense.category}`
@@ -60,6 +62,7 @@ function domLoad(){
             expList.appendChild(newExpense)
             myForm.reset()
         })
+        expList.innerHTML += `<h2><b>Total Expense:<b> ${total}</h2>`
     })
     .catch(err => {
         console.log(err)
@@ -70,6 +73,7 @@ function addExpense(e){
     e.preventDefault()
 
     const data ={
+        userId: localStorage.getItem('userId'),
         expenseAmount: document.getElementById('expense').value,
         expenseTitle: document.getElementById('desc').value,
         expenseCategory: document.getElementById('category').value
@@ -83,7 +87,6 @@ function addExpense(e){
         .catch(err => {
             console.log(err)
         })
-    
     
 }
 

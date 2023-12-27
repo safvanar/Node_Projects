@@ -15,11 +15,10 @@ exports.checkUser = async (req, res, next) => {
         const email = req.body.email
         const password = req.body.password
         
-        console.log(hashedPassword)
         const user = await User.findOne({where: {email: email}})
         if(user){
             if(bcrypt.compareSync(password, user.password)){
-                res.status(200).json({login: 'success'})
+                res.status(200).json({login: 'success', userId: user.id})
             }else{
                 throw new Error('Authentication failure')
             }  

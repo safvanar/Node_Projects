@@ -12,7 +12,9 @@ async function loginCheck(e){
             password: passwordInput.value
         }
         const login = await axios.post('/user/login', data)
+        
         if(login.data.login === 'success'){
+            localStorage.setItem('userId', login.data.userId)
             window.location = '/home'
             window.alert('Login successful!')
         }else{
