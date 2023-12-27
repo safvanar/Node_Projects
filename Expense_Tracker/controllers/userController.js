@@ -20,11 +20,11 @@ exports.checkUser = async (req, res, next) => {
         if(bcrypt.compareSync(password, user.password)){
             res.status(200).json({login: 'success'})
         }else{
-            res.status(401).json({message: 'unauthorized'})
+            res.status(401).json({message: 'username and/or password is incorrect!'})
         }  
     }
     else{
-        res.status(401).json({message: 'unauthorized'})
+        res.status(404).json({message: 'username and/or password is incorrect!'})
     }
 }
 
