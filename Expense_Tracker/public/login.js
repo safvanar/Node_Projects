@@ -19,6 +19,6 @@ async function loginCheck(e){
             throw new Error('Authentication failed!')        
         }
     }catch(err){
-        document.getElementById('response-message').innerText = 'Email and/or password is incorrect!'
+        document.getElementById('response-message').innerText = 'Incorrect username and/or password!'
     }
 }
