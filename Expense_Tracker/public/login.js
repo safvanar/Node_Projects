@@ -19,7 +19,7 @@ async function loginCheck(e){
             throw new Error('Authentication failed!')        
         }
     }catch(err){
-        // console.log(err)
+        console.log(err)
         document.getElementById('response-message').innerText = `${err.response.data.message}`
     }
 }

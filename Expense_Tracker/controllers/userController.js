@@ -11,21 +11,26 @@ function isStringEmpty(string){
 }
 
 exports.checkUser = async (req, res, next) => {
-    const email = req.body.email
-    const password = req.body.password
-    const hashedPassword = bcrypt.hashSync(password, 10)
-    console.log(hashedPassword)
-    const user = await User.findOne({where: {email: email}})
-    if(user){
-        if(bcrypt.compareSync(password, user.password)){
-            res.status(200).json({login: 'success'})
-        }else{
-            res.status(401).json({message: 'username and/or password is incorrect!'})
-        }  
+    try{
+        const email = req.body.email
+        const password = req.body.password
+        
+        console.log(hashedPassword)
+        const user = await User.findOne({where: {email: email}})
+        if(user){
+            if(bcrypt.compareSync(password, user.password)){
+                res.status(200).json({login: 'success'})
+            }else{
+                throw new Error('Authentication failure')
+            }  
+        }
+        else{
+            res.status(404).json({message: 'username and/or password is incorrect!'})
+        }
+    }catch(err){
+        res.status(401).json({message: 'username and/or password is incorrect!'})
     }
-    else{
-        res.status(404).json({message: 'username and/or password is incorrect!'})
-    }
+    
 }
 
 exports.createUser = async (req, res, next) => {
@@ -34,6 +39,8 @@ exports.createUser = async (req, res, next) => {
         const email = req.body.email
         const password = req.body.password
         
+        const hashedPassword = bcrypt.hashSync(password, 10)
+
         if(isStringEmpty(name) || isStringEmpty(email) || isStringEmpty(password)){
             return res.status(400).json({message: 'Fill in all fields!'})
         }
