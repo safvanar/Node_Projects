@@ -22,22 +22,20 @@
     </header>
     <div class="container">
         <div id="main" class="card card-body">
-            <h2 class="title">Sign Up</h2>
-            <form id="signupForm" class="mb-3">
-                <label for="fullName">Name:</label>
-                <input type="text" class="form-control mr-2" id="fullName" name="name" placeholder="Enter your name..." required>
+            <h2 class="title">Login</h2>
+            <form id="loginForm" class="mb-3">
                 <label for="email">Email:</label>
-                <input type="email" class="form-control mr-2" id="email" name="email" placeholder="Enter your email..." required>
+                <input type="text" class="form-control mr-2" id="email" placeholder="Enter the email...">
                 <label for="password">Password:</label>
-                <input type="password" class="form-control mr-2" id="password" name="password" placeholder="Enter the password..." required>
-                <input type="submit" id="signup-btn" class="btn btn-md btn-primary mt-2" value="Sign Up">
+                <input type="password" class="form-control mr-2" id="password" placeholder="Enter the password...">
+                <input type="submit" id="login-btn" class="btn btn-md btn-primary mt-2" value="Login">
             </form>
-            Existing user?<a href="/login" style="color: red; text-decoration: none;">Login Now</a>
+            New to here?<a href="/signup" style="color: red; text-decoration: none;">Create an account now</a> 
         </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="signup.js"></script>
+    <script src="login.js"></script>
 </body>
 
 </html>
