@@ -1,6 +1,14 @@
 const bodyParser = require('body-parser')
 const User = require('../models/users')
 
+function isStringEmpty(string){
+    if(string == undefined || string.length === 0){
+        return true
+    }else{
+        return false
+    }
+}
+
 exports.checkUser = async (req, res, next) => {
     const email = req.body.email
     const password = req.body.password
@@ -19,7 +27,9 @@ exports.createUser = async (req, res, next) => {
         const name = req.body.name
         const email = req.body.email
         const password = req.body.password
-
+        if(isStringEmpty(name) || isStringEmpty(email) || isStringEmpty(password)){
+            return res.status(400).json({message: 'Fill in all fields!'})
+        }
         const user = await User.create({
             name: name,
             email: email,

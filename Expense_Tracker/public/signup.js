@@ -17,7 +17,7 @@ async function signUp(e){
         }
         console.log(signUpDetails)
     }catch(err){
-        document.body.innerHTML += `<div style="color: red">${err}</div>`
+        document.body.innerHTML += `<div style="color: red">Account creation could not be completed!</div>`
     }
     
 }
