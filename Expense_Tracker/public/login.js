@@ -14,10 +14,11 @@ async function loginCheck(e){
         const login = await axios.post('/user/login', data)
         if(login.data.login === 'success'){
             window.location = '/home'
+            window.alert('Login successful!')
         }else{
             throw new Error('Authentication failed!')        
         }
     }catch(err){
-        window.alert('Login failed!')
+        document.getElementById('response-message').innerText = 'Email and/or password is incorrect!'
     }
 }

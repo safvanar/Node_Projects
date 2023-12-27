@@ -18,7 +18,7 @@ exports.checkUser = async (req, res, next) => {
         res.status(200).json({login: 'success'})
     }
     else{
-        res.status(200).json({login: 'authentication failed'})
+        res.status(404).json({login: 'authentication failed'})
     }
 }
 
