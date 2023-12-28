@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 async function initiate(){
     try {
         await sequelize.sync()
-            app.listen(3000, () => {
+            app.listen(5000, () => {
             console.log("Server running on port 3000...")
         })
     } catch (error) {

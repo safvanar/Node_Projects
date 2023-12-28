@@ -14,8 +14,8 @@ async function loginCheck(e){
         const login = await axios.post('/user/login', data)
         
         if(login.data.login === 'success'){
-            localStorage.setItem('userId', login.data.userId)
-            window.location = '/home'
+            localStorage.setItem('token', login.data.token)
+            window.location.href = '/home'
             window.alert('Login successful!')
         }else{
             throw new Error('Authentication failed!')        

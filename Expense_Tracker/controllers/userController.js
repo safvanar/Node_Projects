@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser')
 const User = require('../models/users')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 function isStringEmpty(string){
     if(string == undefined || string.length === 0){
@@ -18,7 +19,8 @@ exports.checkUser = async (req, res, next) => {
         const user = await User.findOne({where: {email: email}})
         if(user){
             if(bcrypt.compareSync(password, user.password)){
-                res.status(200).json({login: 'success', userId: user.id})
+                const token = jwt.sign({userId: user.id}, 'secret-key')
+                res.status(200).json({login: 'success', token: token})
             }else{
                 throw new Error('Authentication failure')
             }  

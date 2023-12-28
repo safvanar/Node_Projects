@@ -2,14 +2,11 @@ const myForm=document.getElementById('addForm')
 const expList=document.getElementById('expense-list')
 myForm.addEventListener('submit', addExpense)
 
-expList.addEventListener('click', addOrDeleteExpense)
 document.addEventListener('DOMContentLoaded', domLoad)
 
 function domLoad(){
     let total = 0
-    const token = localStorage.getItem('token')
-    console.log(token)
-    axios.get('/expense/get-expenses', {headers: {'Authorization': token}})
+    axios.get('/expense/get-expenses')
         .then(response => {
             const data = response.data
             const expenses = data.expenses
@@ -22,27 +19,49 @@ function domLoad(){
                 let newExpense=document.createElement('li')
                 newExpense.className="list-group-item"
                 newExpense.innerHTML=`${expense.title}::<b style="color: red;">${expense.amount}</b>::${expense.category}`
-
-                //Creating a delete button for each expense items
-
                 let delBtn=document.createElement('button')
                 delBtn.innerText="Delete"
                 delBtn.className="btn btn-danger btn-sm float-right delete"
                 delBtn.id = expense.id
 
-                //Creating an edit button for each expense items
+                function removeExpense(event){
+                    const expId = expense.id
+                    console.log(expId)
+                    axios.delete(`/expense/delete-expense/${expId}`)
+                        .then(result => {
+                            domLoad()
+                        })
+                        .catch(err => {
+                            console.log(err)
+                        })
+                }
 
                 let edBtn=document.createElement('button')
                 edBtn.innerText="Edit"
-                edBtn.className="btn btn-success btn-sm float-right edit"
-                edBtn.id = expense.id
-            
-                //appending buttons to the newly created expense item and adding whole item with buttons to the list
+                edBtn.className="btn btn-success btn-sm float-right"
+                edBtn.addEventListener('click',editExpense)
 
-                newExpense.appendChild(delBtn)
-                newExpense.appendChild(edBtn)
-                expList.appendChild(newExpense)
-                myForm.reset()
+                function editExpense(event){
+                    const expId = expense.id
+
+                    document.getElementById('expense').value = expense.amount
+                    document.getElementById('desc').value = expense.title
+                    document.getElementById('expense-btn').value = "Edit Expense"
+                    localStorage.setItem('itemToEdit', expId)
+                    
+                    axios.get(`/expense/edit-expenses/${expId}`)
+                        .then(response => {
+                          expList.removeChild(newExpense)
+                        })
+                        .catch(err => {
+                            console.log(err)
+                        })
+            }
+
+            newExpense.appendChild(delBtn)
+            newExpense.appendChild(edBtn)
+            expList.appendChild(newExpense)
+            myForm.reset()
         })
         expList.innerHTML += `<h2>Total Expense: <b style="color: red;">${total}</b></h2>`
     })
@@ -55,6 +74,7 @@ function addExpense(e){
     e.preventDefault()
 
     const data ={
+        userId: localStorage.getItem('userId'),
         expenseAmount: document.getElementById('expense').value,
         expenseTitle: document.getElementById('desc').value,
         expenseCategory: document.getElementById('category').value
@@ -63,14 +83,14 @@ function addExpense(e){
     if(document.getElementById('expense-btn').value === 'Add expense'){
         axios.post('/expense/add-expense', data)
         .then(response => {
+            console.log(response)
             domLoad();
         })
         .catch(err => {
-            console.log(err.message)
-            domLoad();
+            console.log(err)
         })
     }else{
-        data['expId'] = localStorage.getItem('itemToEdit')
+        data[expId] = localStorage.getItem('itemToEdit')
         axios.put(`/expense/edit-expense`, data)
         .then(response => {
             console.log(response.data)
@@ -79,32 +99,6 @@ function addExpense(e){
         .catch(err => {
             console.log(err)
         })
-    }
-    
-}
-
-async function addOrDeleteExpense(e){
-
-    try{
-        e.preventDefault()
-        const expId = e.target.id
-        if(e.target.classList.contains('delete')){
-            console.log(expId)
-            await axios.delete(`/expense/delete-expense/${expId}`)
-            domLoad()
-        }else if(e.target.classList.contains('edit')){
-            const editItem = await axios.get(`/expense/get-expense/${expId}`)
-            
-            document.getElementById('expense').value = editItem.data.expense.amount
-            document.getElementById('desc').value = editItem.data.expense.title
-            document.getElementById('category').value = editItem.data.expense.category
-            document.getElementById('expense-btn').value = "Edit Expense"
-            localStorage.setItem('itemToEdit', expId)
-                        
-            e.target.parentElement.remove()
-        }
-    }catch(err){
-        console.log(err)
     }
     
 }
