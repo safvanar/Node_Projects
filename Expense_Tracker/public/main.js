@@ -53,7 +53,7 @@ function domLoad(){
 
 function addExpense(e){
     e.preventDefault()
-
+    const token = localStorage.getItem('token')
     const data ={
         expenseAmount: document.getElementById('expense').value,
         expenseTitle: document.getElementById('desc').value,
@@ -61,7 +61,7 @@ function addExpense(e){
     }
 
     if(document.getElementById('expense-btn').value === 'Add expense'){
-        axios.post('/expense/add-expense', data)
+        axios.post('/expense/add-expense', data, {headers: {'Authorization': token}})
         .then(response => {
             domLoad();
         })
@@ -71,7 +71,7 @@ function addExpense(e){
         })
     }else{
         data['expId'] = localStorage.getItem('itemToEdit')
-        axios.put(`/expense/edit-expense`, data)
+        axios.put(`/expense/edit-expense`, data, {headers: {'Authorization': token}})
         .then(response => {
             console.log(response.data)
             domLoad();
@@ -86,14 +86,15 @@ function addExpense(e){
 async function addOrDeleteExpense(e){
 
     try{
+        const token = localStorage.getItem('token')
         e.preventDefault()
         const expId = e.target.id
         if(e.target.classList.contains('delete')){
             console.log(expId)
-            await axios.delete(`/expense/delete-expense/${expId}`)
+            await axios.delete(`/expense/delete-expense/${expId}`, {headers: {'Authorization': token}})
             domLoad()
         }else if(e.target.classList.contains('edit')){
-            const editItem = await axios.get(`/expense/get-expense/${expId}`)
+            const editItem = await axios.get(`/expense/get-expense/${expId}`, {headers: {'Authorization': token}})
             
             document.getElementById('expense').value = editItem.data.expense.amount
             document.getElementById('desc').value = editItem.data.expense.title

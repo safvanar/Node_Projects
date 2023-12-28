@@ -6,7 +6,7 @@ const User = require('../models/users')
 
 exports.postAddExpense = async (req, res, next) => {
     try{
-        const userId = req.body.userId
+        const user = req.user
         const amount = req.body.expenseAmount
         const title = req.body.expenseTitle
         const category = req.body.expenseCategory
@@ -15,11 +15,10 @@ exports.postAddExpense = async (req, res, next) => {
             return res.status(400).json({message: 'Bad parameters'})
         }
 
-        await Expense.create({
+        await user.createExpense({
             title: title,
             amount: amount,
             category: category,
-            userId: userId
         })
         res.status(201).redirect('/home')
     }catch(err){
@@ -37,8 +36,8 @@ exports.getExpenses = async (req, res, next) => {
 }
 
 exports.getEditExpense = (req, res, next) => {
+    const user = req.user
     const expId = req.body.expId
-    const userId = req.body.userId
     const amount = req.body.expenseAmount
     const title = req.body.expenseTitle
     const category = req.body.expenseCategory 
@@ -49,7 +48,11 @@ exports.getEditExpense = (req, res, next) => {
             expense.amount = amount
             expense.title = title
             expense.category = category
-            return expense.save()
+            if(expense.userId === user.id){
+                return expense.save()
+            }else{
+                throw new Error('User is not authenticated to edit the expense')
+            }
         })
         .then(result => {
             res.redirect('/get-expenses')
@@ -60,11 +63,16 @@ exports.getEditExpense = (req, res, next) => {
 }
 
 exports.deleteExpense = (req, res, next) => {
+    const user = req.user
     const expId = req.params.expenseId
     console.log("Expense ID: ", expId)
     Expense.findByPk(expId)
         .then(expense => {
-            return expense.destroy()
+            if(expense.userId === user.id){
+                return expense.destroy()
+            }else{
+                throw new Error('User is not authorized')
+            }
         })
         .then(result => {
             res.redirect('/home')
@@ -76,9 +84,14 @@ exports.deleteExpense = (req, res, next) => {
 
 exports.getExpense = async (req, res, next) => {
     try{
+        const user = req.user
         const expId = req.params.expId
         const expense = await Expense.findByPk(expId)
-        res.status(200).json({message: 'successful', expense: expense})
+        if(expense.userId === user.id){
+            res.status(200).json({message: 'successful', expense: expense})
+        }else{
+            throw new Error('User is not authenticated to view')
+        }
     }catch(err){
         console.log(err)
         res.status(500).json({message: 'error fetching the expense'})
