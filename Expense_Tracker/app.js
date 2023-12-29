@@ -19,6 +19,8 @@ const Expense = require('./models/expenseModel')
 
 const Order = require('./models/orders')
 
+require('dotenv').config();
+
 app.use(express.static('public'))
 
 app.use(cors());

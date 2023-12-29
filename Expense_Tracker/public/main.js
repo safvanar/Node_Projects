@@ -113,10 +113,46 @@ async function addOrDeleteExpense(e){
 }
 
 async function activateSubscription(e){
-    e.preventDefault()
-    const token = localStorage.getItem('token')
-    console.log(token)
-    const response = await axios.get('/purchase/premiumMembership', {headers: {'Authorization': token}})
-    console.log(response)
+    try{
+        e.preventDefault()
+        const token = localStorage.getItem('token')
+        console.log(token)
+        const response = await axios.get('/purchase/premiumMembership', {headers: {'Authorization': token}})
+        // console.log(response)
+        var options = {
+            "key": response.data.key_id,
+            "order_id": response.data.order.id,
+            "handler": async function(response){
+                try{
+                    await axios.post('/purchase/updateTransactionStatus', {
+                        order_id: options.order_id,
+                        payment_id: response.razorpay_payment_id
+                    }, {headers: {'Authorization': token}})
+                    alert('You are a premium user now!')
+                }catch(err){
+                    console.log(err)
+                }
+            }
+        }
+
+        const rzp = new Razorpay(options)
+        rzp.open()
+
+        rzp.on('payment.failed', async function(response){
+            try{
+                console.log(payment_id)
+                await axios.post('/purchase/updateTransactionStatus', {
+                    order_id: options.order_id,
+                    payment_id: 'failed'
+                }, {headers: {'Authorization': token}})
+                alert('Payment failed!')
+            }catch(err){
+                console.log(err)
+            }
+        })
+    }catch(err){
+        console.log(err)
+    }
+    
 }
 

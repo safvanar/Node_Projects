@@ -48,7 +48,8 @@ exports.createUser = async (req, res, next) => {
         const user = await User.create({
             name: name,
             email: email,
-            password: hashedPassword
+            password: hashedPassword,
+            isPremiumUser: false
         })
         res.status(201).json({message: 'account created successfully!'})
     }catch(err){
