@@ -11,9 +11,13 @@ const expenseRoutes = require('./routes/expenseRoute');
 
 const userRoutes = require('./routes/userRoute')
 
+const purchaseRoutes = require('./routes/purchaseRoute')
+
 const User = require('./models/users')
 
 const Expense = require('./models/expenseModel')
+
+const Order = require('./models/orders')
 
 app.use(express.static('public'))
 
@@ -24,6 +28,8 @@ app.use(bodyParser.json({ extended: false }));
 app.use('/user', userRoutes)
 
 app.use('/expense', expenseRoutes);
+
+app.use('/purchase', purchaseRoutes)
 
 app.use('/home', (req, res, next) => {
     res.sendFile('index.html', {root:'views'})
@@ -38,6 +44,10 @@ app.use((req, res, next) => {
 })
 
 User.hasMany(Expense)
+Expense.belongsTo(User)
+
+User.hasMany(Order)
+Order.belongsTo(User)
 
 async function initiate(){
     try {

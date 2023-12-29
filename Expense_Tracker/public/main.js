@@ -1,9 +1,11 @@
-const myForm=document.getElementById('addForm')
-const expList=document.getElementById('expense-list')
-myForm.addEventListener('submit', addExpense)
+const myForm = document.getElementById('addForm')
+const expList = document.getElementById('expense-list')
+const premiumBtn = document.getElementById('premiumBtn')
 
+myForm.addEventListener('submit', addExpense)
 expList.addEventListener('click', addOrDeleteExpense)
 document.addEventListener('DOMContentLoaded', domLoad)
+premiumBtn.addEventListener('click', activateSubscription)
 
 function domLoad(){
     let total = 0
@@ -108,5 +110,13 @@ async function addOrDeleteExpense(e){
         console.log(err)
     }
     
+}
+
+async function activateSubscription(e){
+    e.preventDefault()
+    const token = localStorage.getItem('token')
+    console.log(token)
+    const response = await axios.get('/purchase/premiumMembership', {headers: {'Authorization': token}})
+    console.log(response)
 }
 

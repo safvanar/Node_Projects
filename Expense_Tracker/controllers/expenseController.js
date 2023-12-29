@@ -28,7 +28,8 @@ exports.postAddExpense = async (req, res, next) => {
 
 exports.getExpenses = async (req, res, next) => {
     try{
-        const expenses = await Expense.findAll({where: { userId: req.user.id}})
+        const expenses = await req.user.getExpenses() // -> using magic functions due to the association
+        // const expenses = await Expense.findAll({where: { userId: req.user.id}})
         res.status(200).json({ expenses: expenses})
     }catch(err){
         console.log(err)
@@ -66,6 +67,8 @@ exports.deleteExpense = (req, res, next) => {
     const user = req.user
     const expId = req.params.expenseId
     console.log("Expense ID: ", expId)
+
+    //Expense.destroy({where: {id: expId, userId: user.id}})
     Expense.findByPk(expId)
         .then(expense => {
             if(expense.userId === user.id){
@@ -79,6 +82,7 @@ exports.deleteExpense = (req, res, next) => {
         })
         .catch(err => {
             console.log(err)
+            res.status(403).json({message: 'user is not authorized for deleting other\'s expenses'})
         })
 }
 
