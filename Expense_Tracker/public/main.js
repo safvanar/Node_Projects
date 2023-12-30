@@ -9,13 +9,23 @@ expList.addEventListener('click', addOrDeleteExpense)
 document.addEventListener('DOMContentLoaded', domLoad)
 premiumBtn.addEventListener('click', activateSubscription)
 
+function parseJwt (token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
 async function domLoad(){
     leaderBorad.style.display = 'none'
     let total = 0
     const token = localStorage.getItem('token')
 
-    const userStatus = await axios.get(`/user/getStatus`, {headers: {'Authorization': token}})
-    if(userStatus.data.isPremiumUser === true){
+    // const userStatus = await axios.get(`/user/getStatus`, {headers: {'Authorization': token}})
+    if(parseJwt(token).isPremiumUser){
         premiumBtn.style.display = 'none'
         premiumDiv.innerHTML = `<h2 style="color: gold;">You Are a premium user!</h2>
                                 <button class="btn btn-dark" style="color: gold;" onclick = "showLeaderboard()">Leaderboad</button>`
@@ -127,7 +137,7 @@ async function activateSubscription(e){
     try{
         e.preventDefault()
         const token = localStorage.getItem('token')
-        console.log(token)
+        // console.log(token)
         const response = await axios.get('/purchase/premiumMembership', {headers: {'Authorization': token}})
         // console.log(response)
         var options = {
@@ -135,10 +145,11 @@ async function activateSubscription(e){
             "order_id": response.data.order.id,
             "handler": async function(response){
                 try{
-                    await axios.post('/purchase/updateTransactionStatus', {
+                    const subscription = await axios.post('/purchase/updateTransactionStatus', {
                         order_id: options.order_id,
                         payment_id: response.razorpay_payment_id
                     }, {headers: {'Authorization': token}})
+                    localStorage.setItem('token', subscription.data.token)
                     alert('You are a premium user now!')
                     domLoad()
                 }catch(err){
@@ -171,7 +182,7 @@ async function showLeaderboard(){
     try{
         const token = localStorage.getItem('token')
         const response = await axios.get('/premium/showLeaderBoard', {headers: {'Authorization': token}})
-        const users = response.data.users
+        const users = response.data
         console.log(users)
         leaderBorad.style.display = 'block'
         const tableBody = document.querySelector('#leaderboardTable tbody');
@@ -186,7 +197,7 @@ async function showLeaderboard(){
 
             const totalSpendingCell = document.createElement('td');
             totalSpendingCell.textContent = user.totalSpending;
-            totalSpendingCell.color = 'red'
+            totalSpendingCell.style.color = 'green'
 
             // Append cells to the row
             row.appendChild(nameCell);

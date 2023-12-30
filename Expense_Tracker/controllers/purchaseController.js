@@ -1,6 +1,12 @@
 const Razorpay = require('razorpay')
 const Order = require('../models/orders')
 const User = require('../models/users')
+const jwt = require('jsonwebtoken')
+
+
+function generateAccessToken(id, isPremiumUser){
+    return jwt.sign({userId: id, isPremiumUser: isPremiumUser}, 'secret-key')
+}
 
 exports.getPremiumMembership = async (req, res, next) => {
     try{
@@ -28,6 +34,7 @@ exports.getPremiumMembership = async (req, res, next) => {
 
 exports.updateTransactionStatus = async (req, res, next) => {
     try{
+        const user = req.user
         const paymentId = req.body.payment_id
         const orderId = req.body.order_id
         const order = await Order.findOne({where: {orderId: orderId}})
@@ -41,7 +48,8 @@ exports.updateTransactionStatus = async (req, res, next) => {
 
         Promise.all([promise1, promise2])
         .then(() => {
-            return res.status(201).json({message: 'payment successful!'})
+            const token = generateAccessToken(user.id, user.isPremiumUser)
+            return res.status(201).json({message: 'payment successful!', token: token})
         })
         .catch((err) => {
             throw new Error(err)

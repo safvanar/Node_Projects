@@ -11,6 +11,10 @@ function isStringEmpty(string){
     }
 }
 
+function generateAccessToken(id, isPremiumUser){
+    return jwt.sign({userId: id, isPremiumUser: isPremiumUser}, 'secret-key')
+}
+
 exports.checkUser = async (req, res, next) => {
     try{
         const email = req.body.email
@@ -19,7 +23,7 @@ exports.checkUser = async (req, res, next) => {
         const user = await User.findOne({where: {email: email}})
         if(user){
             if(bcrypt.compareSync(password, user.password)){
-                const token = jwt.sign({userId: user.id}, 'secret-key')
+                const token = generateAccessToken(user.id, user.isPremiumUser) //jwt.sign({userId: user.id, isPremiumUser: user.isPremiumUser}, 'secret-key')
                 res.status(200).json({login: 'success', token: token})
             }else{
                 throw new Error('Authentication failure')
