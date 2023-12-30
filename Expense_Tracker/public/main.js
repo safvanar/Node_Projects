@@ -1,15 +1,26 @@
 const myForm = document.getElementById('addForm')
 const expList = document.getElementById('expense-list')
+const premiumDiv = document.getElementById('premiumDiv')
 const premiumBtn = document.getElementById('premiumBtn')
+const leaderBorad = document.getElementById('leaderBoard')
 
 myForm.addEventListener('submit', addExpense)
 expList.addEventListener('click', addOrDeleteExpense)
 document.addEventListener('DOMContentLoaded', domLoad)
 premiumBtn.addEventListener('click', activateSubscription)
 
-function domLoad(){
+async function domLoad(){
+    leaderBorad.style.display = 'none'
     let total = 0
     const token = localStorage.getItem('token')
+
+    const userStatus = await axios.get(`/user/getStatus`, {headers: {'Authorization': token}})
+    if(userStatus.data.isPremiumUser === true){
+        premiumBtn.style.display = 'none'
+        premiumDiv.innerHTML = `<h2 style="color: gold;">You Are a premium user!</h2>
+                                <button class="btn btn-dark" style="color: gold;" onclick = "showLeaderboard()">Leaderboad</button>`
+    }
+
     console.log(token)
     axios.get('/expense/get-expenses', {headers: {'Authorization': token}})
         .then(response => {
@@ -129,6 +140,7 @@ async function activateSubscription(e){
                         payment_id: response.razorpay_payment_id
                     }, {headers: {'Authorization': token}})
                     alert('You are a premium user now!')
+                    domLoad()
                 }catch(err){
                     console.log(err)
                 }
@@ -140,8 +152,7 @@ async function activateSubscription(e){
 
         rzp.on('payment.failed', async function(response){
             try{
-                console.log(payment_id)
-                await axios.post('/purchase/updateTransactionStatus', {
+                await axios.post('/purchase/updateFailedTransactionStatus', {
                     order_id: options.order_id,
                     payment_id: 'failed'
                 }, {headers: {'Authorization': token}})
@@ -155,4 +166,38 @@ async function activateSubscription(e){
     }
     
 }
+
+async function showLeaderboard(){
+    try{
+        const token = localStorage.getItem('token')
+        const response = await axios.get('/premium/showLeaderBoard', {headers: {'Authorization': token}})
+        const users = response.data.users
+        console.log(users)
+        leaderBorad.style.display = 'block'
+        const tableBody = document.querySelector('#leaderboardTable tbody');
+        tableBody.innerHTML = ''
+        users.forEach(user => {
+            // Create a new row
+            const row = document.createElement('tr');
+
+            // Create cells for each user property
+            const nameCell = document.createElement('td');
+            nameCell.textContent = user.name;
+
+            const totalSpendingCell = document.createElement('td');
+            totalSpendingCell.textContent = user.totalSpending;
+            totalSpendingCell.color = 'red'
+
+            // Append cells to the row
+            row.appendChild(nameCell);
+            row.appendChild(totalSpendingCell);
+
+            // Append the row to the table body
+            tableBody.appendChild(row);
+        })
+    }catch(err){
+        console.log(err)
+    }
+}
+
 

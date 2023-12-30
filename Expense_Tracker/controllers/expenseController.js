@@ -20,6 +20,7 @@ exports.postAddExpense = async (req, res, next) => {
             amount: amount,
             category: category,
         })
+        user.update({totalSpending: parseInt(user.totalSpending) + parseInt(amount)})
         res.status(201).redirect('/home')
     }catch(err){
         res.status(500).json({message: 'server side error'})
@@ -71,6 +72,7 @@ exports.deleteExpense = (req, res, next) => {
     //Expense.destroy({where: {id: expId, userId: user.id}})
     Expense.findByPk(expId)
         .then(expense => {
+            const expenseAmount = expense.amount
             if(expense.userId === user.id){
                 return expense.destroy()
             }else{
@@ -78,6 +80,7 @@ exports.deleteExpense = (req, res, next) => {
             }
         })
         .then(result => {
+            User.update({totalSpending: parseInt(req.user.totalSpending) - parseInt(expenseAmount)})
             res.redirect('/home')
         })
         .catch(err => {

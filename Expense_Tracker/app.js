@@ -13,6 +13,8 @@ const userRoutes = require('./routes/userRoute')
 
 const purchaseRoutes = require('./routes/purchaseRoute')
 
+const premiumRoutes = require('./routes/premiumRoute')
+
 const User = require('./models/users')
 
 const Expense = require('./models/expenseModel')
@@ -28,6 +30,8 @@ app.use(cors());
 app.use(bodyParser.json({ extended: false }));
 
 app.use('/user', userRoutes)
+
+app.use('/premium', premiumRoutes)
 
 app.use('/expense', expenseRoutes);
 

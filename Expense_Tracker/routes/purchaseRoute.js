@@ -8,5 +8,6 @@ const router = express.Router()
 
 router.get('/premiumMembership', userAuthentication, purchaseController.getPremiumMembership)
 router.post('/updateTransactionStatus', userAuthentication, purchaseController.updateTransactionStatus)
+router.post('/updateFailedTransactionStatus', userAuthentication, purchaseController.updateFailedTransactionStatus)
 
 module.exports = router

@@ -49,10 +49,21 @@ exports.createUser = async (req, res, next) => {
             name: name,
             email: email,
             password: hashedPassword,
+            totalSpending: 0,
             isPremiumUser: false
         })
         res.status(201).json({message: 'account created successfully!'})
     }catch(err){
         res.status(500).json({message: 'error creating an account!'})
+    }
+}
+
+exports.getUserStatus = async (req, res, next) => {
+    try{
+       const userStatus = req.user.isPremiumUser
+       res.status(201).json({isPremiumUser: userStatus})
+    }catch(err){
+        console.log(err)
+        res.status(403).json({message: 'Error fetching user status!'})
     }
 }
