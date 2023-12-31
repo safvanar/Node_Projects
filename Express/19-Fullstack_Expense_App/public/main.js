@@ -20,6 +20,7 @@ function domLoad(){
                 let delBtn=document.createElement('button')
                 delBtn.innerText="Delete"
                 delBtn.className="btn btn-danger btn-sm float-right delete"
+                delBtn.id = new Date().getTime()
                 delBtn.addEventListener('click',removeExpense)
 
                 function removeExpense(event){

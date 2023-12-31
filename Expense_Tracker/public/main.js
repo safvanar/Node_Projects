@@ -182,7 +182,7 @@ async function showLeaderboard(){
     try{
         const token = localStorage.getItem('token')
         const response = await axios.get('/premium/showLeaderBoard', {headers: {'Authorization': token}})
-        const users = response.data
+        const users = response.data.users
         console.log(users)
         leaderBorad.style.display = 'block'
         const tableBody = document.querySelector('#leaderboardTable tbody');
