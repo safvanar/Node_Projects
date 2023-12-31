@@ -2,9 +2,12 @@ const bodyParser = require('body-parser')
 
 const Expense = require('../models/expenseModel')
 
+const sequelize = require('../utils/database')
+
 const User = require('../models/users')
 
 exports.postAddExpense = async (req, res, next) => {
+    const t = await sequelize.transaction()
     try{
         const user = req.user
         const amount = req.body.expenseAmount
@@ -19,12 +22,14 @@ exports.postAddExpense = async (req, res, next) => {
             title: title,
             amount: amount,
             category: category,
-        })
-        user.update({totalSpending: parseInt(user.totalSpending) + parseInt(amount)})
+        }, {transaction: t})
+        await user.update({totalSpending: parseInt(user.totalSpending) + parseInt(amount)}, {transaction: t})
+        await t.commit()
         res.status(201).redirect('/home')
     }catch(err){
+        await t.rollback()
         res.status(500).json({message: 'server side error'})
-    } 
+    }
 }
 
 exports.getExpenses = async (req, res, next) => {
@@ -38,6 +43,7 @@ exports.getExpenses = async (req, res, next) => {
 }
 
 exports.getEditExpense = async (req, res, next) => {
+    const t = await sequelize.transaction()
     try{
         const user = req.user
         const expId = req.body.expId
@@ -45,18 +51,20 @@ exports.getEditExpense = async (req, res, next) => {
         const title = req.body.expenseTitle
         const category = req.body.expenseCategory 
 
-        console.log("Changes: "+ amount)
+        // console.log("Changes: "+ amount)
 
         const expense = await Expense.findByPk(expId)
         if(expense.userId === user.id){
             const expenseOld = expense.amount
-            const promise1 = expense.update({amount: amount, title: title, category: category})
-            const promise2 = user.update({totalSpending: parseInt(user.totalSpending) - parseInt(expenseOld) + parseInt(amount)})
+            const promise1 = expense.update({amount: amount, title: title, category: category}, {transaction: t})
+            const promise2 = user.update({totalSpending: parseInt(user.totalSpending) - parseInt(expenseOld) + parseInt(amount)}, {transaction: t})
             Promise.all([promise1, promise2])
-            .then(() => {
+            .then(async () => {
+                await t.commit() 
                 res.redirect('/get-expenses')
             })
-            .catch((err) => {
+            .catch(async (err) => {
+                await t.rollback()
                 throw new Error(err)
             })
         }else{
@@ -88,6 +96,7 @@ exports.getEditExpense = async (req, res, next) => {
 }
 
 exports.deleteExpense = async (req, res, next) => {
+    const t = await sequelize.transaction()
     try{
         const user = req.user
         const expId = req.params.expenseId
@@ -96,19 +105,22 @@ exports.deleteExpense = async (req, res, next) => {
         //Expense.destroy({where: {id: expId, userId: user.id}})
         const expense = await Expense.findByPk(expId)
         const expenseAmount = expense.amount
-        console.log(`${user.totalSpending} - ${expenseAmount} = ${user.totalSpending - expenseAmount}`)
+        // console.log(`${user.totalSpending} - ${expenseAmount} = ${user.totalSpending - expenseAmount}`)
 
-        const promise1 = user.update({totalSpending: parseInt(user.totalSpending) - parseInt(expenseAmount)})
-        const promise2 = expense.destroy()
+        const promise1 = user.update({totalSpending: parseInt(user.totalSpending) - parseInt(expenseAmount)}, {transaction: t})
+        const promise2 = expense.destroy({transaction: t})
 
         Promise.all([promise1, promise2])
-        .then(() => {
+        .then(async () => {
+            await t.commit()
             res.redirect('/home')
         })
-        .catch(err => {
+        .catch(async (err) => {
+            await t.rollback()
             throw new Error(err)
         })
     }catch(err){
+        await t.rollback()
         console.log(err)
         res.status(403).json({message: 'user is not authorized for deleting other\'s expenses'})
     }
