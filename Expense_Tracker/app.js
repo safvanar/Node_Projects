@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -22,8 +24,6 @@ const User = require('./models/users')
 const Expense = require('./models/expenseModel')
 
 const Order = require('./models/orders')
-
-require('dotenv').config();
 
 app.use(express.static('public'))
 
