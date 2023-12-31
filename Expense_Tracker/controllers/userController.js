@@ -53,7 +53,6 @@ exports.createUser = async (req, res, next) => {
             name: name,
             email: email,
             password: hashedPassword,
-            totalSpending: 0,
             isPremiumUser: false
         })
         res.status(201).json({message: 'account created successfully!'})
