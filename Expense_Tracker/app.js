@@ -15,6 +15,8 @@ const purchaseRoutes = require('./routes/purchaseRoute')
 
 const premiumRoutes = require('./routes/premiumRoute')
 
+const passwordRoutes = require('./routes/passwordRoute')
+
 const User = require('./models/users')
 
 const Expense = require('./models/expenseModel')
@@ -36,6 +38,8 @@ app.use('/premium', premiumRoutes)
 app.use('/expense', expenseRoutes);
 
 app.use('/purchase', purchaseRoutes)
+
+app.use('/password', passwordRoutes)
 
 app.use('/home', (req, res, next) => {
     res.sendFile('index.html', {root:'views'})
