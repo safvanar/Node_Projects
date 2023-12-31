@@ -20,7 +20,7 @@ exports.resetPassword = async (req, res, next) => {
             sender,
             to: receiver,
             subject: 'Password reset',
-            textContent: `Hello {{user.name}},<br>
+            textContent: `Hello person,<br>
                         Your password of expense tracker pro is 'password-here'`,
             user: {
                 name: user.name
@@ -30,6 +30,6 @@ exports.resetPassword = async (req, res, next) => {
         res.status(201).json({message: 'succesful!'})
     }catch(err){
         console.log(err)
-        res.status(403).json({message: 'Error fetching leader board!'})
+        res.status(403).json({message: 'Error sending email!'})
     }
 }
