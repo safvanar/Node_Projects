@@ -57,13 +57,14 @@ app.use((req, res, next) => {
     res.sendFile('login.html', {root:'views'})
 })
 
-User.hasMany(Expense)
+User.hasMany(Expense, { onDelete: 'CASCADE', hooks: true })
 Expense.belongsTo(User)
 
-User.hasMany(Order)
+User.hasMany(Order, { onDelete: 'CASCADE', hooks: true })
 Order.belongsTo(User)
 
-User.hasMany(ForgotPasswordRequest)
+User.hasMany(ForgotPasswordRequest, { onDelete: 'CASCADE', hooks: true })
+ForgotPasswordRequest.belongsTo(User)
 
 async function initiate(){
     try {
