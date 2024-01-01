@@ -5,6 +5,8 @@ const passwordController = require('../controllers/passwordController')
 const router = express.Router()
 
 // router.get('/expenses', expenseController.getExpenses)
-router.post('/resetPassword', passwordController.resetPassword)
+router.post('/resetPasswordReq', passwordController.postResetPasswordReq)
+router.get('/resetPassword/:forgotPassId', passwordController.getResetPassword)
+router.post('/resetPassword', passwordController.postResetPassword)
 
 module.exports = router

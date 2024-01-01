@@ -43,7 +43,7 @@ async function resetPassword(e){
             resetEmail: enteredEmail
         }
         // Handle the password reset logic (send email, etc.)
-        const response = await axios.post('/password/resetPassword', data)
+        const response = await axios.post('/password/resetPasswordReq', data)
 
         setTimeout(function () {
             // Display the success message

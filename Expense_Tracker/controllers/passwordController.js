@@ -1,5 +1,9 @@
 const bodyParser = require('body-parser')
+const uuid = require('uuid')
+const bcrypt = require('bcrypt')
+
 const User = require('../models/users')
+const ForgotPasswordRequest = require('../models/forgotPasswordRequests')
 const sequelize = require('../utils/database')
 
 const Sib = require('sib-api-v3-sdk')
@@ -11,29 +15,85 @@ const sender ={
     email: 'safvanforfkart@gmail.com',
     name: 'Expense Tracker Pro'
 }
-exports.resetPassword = async (req, res, next) => {
+
+function isStringEmpty(string){
+    if(string == undefined || string.length === 0){
+        return true
+    }else{
+        return false
+    }
+}
+
+exports.postResetPasswordReq = async (req, res, next) => {
     try{
-        console.log("API KEY >>>>>>> ", apiKey.apiKey)
         const resetEmail = req.body.resetEmail
         const receiver = [{email: resetEmail}]
         const user = await User.findOne({where: {email: resetEmail}})
-        console.log('USER>>>>>>>>> ',user.name)
-        await tranEmailApi.sendTransacEmail({
-            sender,
-            to: receiver,
-            subject: 'Password reset',
-            textContent: `Hello person,<br>
-                        Your password of expense tracker pro is 'password-here'`,
-            user: {
-                name: user.name
-            }
-        })
-        // const users = await User.findAll({attributes: ['name', 'totalSpending'], order: [['totalSpending', 'DESC']]})
-        res.status(201).json({message: 'succesful!'})
+        if(user){
+            const randomUUID = uuid.v4()
+            await user.createForgotPasswordRequest({id: randomUUID, isActive: true})
+            await tranEmailApi.sendTransacEmail({
+                sender,
+                to: receiver,
+                subject: 'Password reset',
+                htmlContent: `<p>Hello {{data.name}},<br>
+                            You are receiving this mail as per your request to change your password for your expense tracker pro account.
+                            You can change your password from here:<br>
+                            <a href='http://localhost:3000/password/resetPassword/${randomUUID}'>reset password</a></p>`,
+                data: {
+                    name: user.name
+                }
+            })
+            return res.status(201).json({message: 'succesful!'})
+        }else{
+            throw new Error("User doesn't exist!")
+        }
     }catch(err){
         console.log(err)
-        res.status(403).json({message: 'Error sending email!'})
+        return res.status(403).json({message: 'Error sending email!'})
     }
+}
+
+exports.getResetPassword = async (req, res, next) => {
+    try{
+        const forgotPassId = req.params.forgotPassId
+        const forgotReq = await ForgotPasswordRequest.findOne({where: {id: forgotPassId}})
+        console.log(forgotPassId, forgotReq.isActive)
+        if(forgotReq.isActive){
+            console.log("<<<<<MADE TO IF BLOCK>>>>>");
+            return res.status(200).sendFile('resetPassword.html', {root: 'views'})
+        }else{
+            console.log("<<<<<MADE TO ELSE BLOCK>>>>>")
+            throw new Error('Invalid link to reset password!')
+        }
+    }catch(err){
+        console.log(err)
+        return res.status(403).json({message: 'Error resetting the password!'})
+    }
+}
+
+exports.postResetPassword = async (req, res, next) => {
+    try{
+        const email = req.body.email
+        const newPassword = req.body.newPassword
+
+        if(isStringEmpty(email) || isStringEmpty(newPassword)){
+            return res.status(400).json({message: 'Fill in all fields!'})
+        }
+
+        const user = await User.findOne({where: {email: email}})
+        if(user){
+            const hashedPassword = bcrypt.hashSync(newPassword, 10)
+            await user.update({password: hashedPassword})
+            return res.status(201).json({message: 'password changed succesfully!', success: true})
+        }else{
+            throw new Error("User doesn't exist!")
+        }
+    }catch(err){
+        console.log(err)
+        res.status(403).json({message: 'Could not change the user password!'})
+    }
+    
 }
 
 //Rundan's code

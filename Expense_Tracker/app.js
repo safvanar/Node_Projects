@@ -23,7 +23,9 @@ const User = require('./models/users')
 
 const Expense = require('./models/expenseModel')
 
-const Order = require('./models/orders')
+const Order = require('./models/orders');
+
+const ForgotPasswordRequest = require('./models/forgotPasswordRequests');
 
 app.use(express.static('public'))
 
@@ -58,6 +60,8 @@ Expense.belongsTo(User)
 
 User.hasMany(Order)
 Order.belongsTo(User)
+
+User.hasMany(ForgotPasswordRequest)
 
 async function initiate(){
     try {
