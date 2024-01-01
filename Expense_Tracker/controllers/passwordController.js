@@ -60,10 +60,8 @@ exports.getResetPassword = async (req, res, next) => {
         const forgotReq = await ForgotPasswordRequest.findOne({where: {id: forgotPassId}})
         console.log(forgotPassId, forgotReq.isActive)
         if(forgotReq.isActive){
-            console.log("<<<<<MADE TO IF BLOCK>>>>>");
-            return res.status(200).sendFile('resetPassword.html', {root: 'views'})
+            return res.status(200).sendFile('resetPassword.html', {root: 'views', headers: {'X_AUTH_FORGOT': forgotPassId}})
         }else{
-            console.log("<<<<<MADE TO ELSE BLOCK>>>>>")
             throw new Error('Invalid link to reset password!')
         }
     }catch(err){
@@ -73,10 +71,10 @@ exports.getResetPassword = async (req, res, next) => {
 }
 
 exports.postResetPassword = async (req, res, next) => {
+    const t = await sequelize.transaction()
     try{
         const email = req.body.email
         const newPassword = req.body.newPassword
-
         if(isStringEmpty(email) || isStringEmpty(newPassword)){
             return res.status(400).json({message: 'Fill in all fields!'})
         }
@@ -84,8 +82,19 @@ exports.postResetPassword = async (req, res, next) => {
         const user = await User.findOne({where: {email: email}})
         if(user){
             const hashedPassword = bcrypt.hashSync(newPassword, 10)
-            await user.update({password: hashedPassword})
-            return res.status(201).json({message: 'password changed succesfully!', success: true})
+            const promise1 = user.update({password: hashedPassword}, {transaction: t})
+            const promise2 = ForgotPasswordRequest.update({isActive: false},{where: {userId: user.id}}, {transaction: t})
+
+            Promise.all([promise1, promise2])
+            .then(async () => {
+                await t.commit()
+                return res.status(201).json({message: 'password changed succesfully!', success: true})
+            })
+            .catch(async (err) => {
+                console.log(err)
+                await t.rollback()
+                throw new Error('Error changing password!')
+            })
         }else{
             throw new Error("User doesn't exist!")
         }
