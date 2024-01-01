@@ -1,4 +1,3 @@
-const bodyParser = require('body-parser')
 const uuid = require('uuid')
 const bcrypt = require('bcrypt')
 
@@ -36,13 +35,10 @@ exports.postResetPasswordReq = async (req, res, next) => {
                 sender,
                 to: receiver,
                 subject: 'Password reset',
-                htmlContent: `<p>Hello {{data.name}},<br>
+                htmlContent: `<p>Hello ${user.name},<br>
                             You are receiving this mail as per your request to change your password for your expense tracker pro account.
                             You can change your password from here:<br>
                             <a href='http://localhost:3000/password/resetPassword/${randomUUID}'>reset password</a></p>`,
-                data: {
-                    name: user.name
-                }
             })
             return res.status(201).json({message: 'succesful!'})
         }else{
@@ -60,7 +56,53 @@ exports.getResetPassword = async (req, res, next) => {
         const forgotReq = await ForgotPasswordRequest.findOne({where: {id: forgotPassId}})
         console.log(forgotPassId, forgotReq.isActive)
         if(forgotReq.isActive){
-            return res.status(200).sendFile('resetPassword.html', {root: 'views', headers: {'X_AUTH_FORGOT': forgotPassId}})
+            res.send(`<!DOCTYPE html>
+            <html lang="en">
+            
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+                    integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+                <title>Expense Tracker</title>
+            </head>
+            
+            <body>
+                <header id="main-header" class="bg-success text-white p-4 mb-3">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h1 id="header-title">Expense Tracker</h1>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <div class="container">
+                    <div id="main" class="card card-body">
+                        <h2 class="title">Password Reset</h2>
+                        <form id="passwordResetForm" action="/password/changePassword/${forgotPassId}" method="POST" class="mb-3">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control mr-2" id="email" name="email" placeholder="Enter your email...">
+                            <label for="newPassword">New Password:</label>
+                            <input type="password" class="form-control mr-2" id="newPassword" name="newPassword" placeholder="Enter new password...">
+                            <button type="submit" id="resetPasswordBtn" class="btn btn-md btn-primary mt-2">Reset Password</button>
+                        </form>
+                        Forgot password? <a class="btn btn-sm btn-warning" style="width: 3rem;" id="resetBtn">Reset</a>
+                        New to here?<a href="/signup" style="color: red; text-decoration: none;">Create an account now</a> 
+                        <div style="color: red;" id="response-message"></div>
+                    </div>
+                </div>
+            
+                
+                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+                
+            </body>
+            
+            </html>`)
+            res.end()
+            // return res.status(200).sendFile('resetPassword.html', {root: 'views'})
         }else{
             throw new Error('Invalid link to reset password!')
         }
@@ -70,16 +112,20 @@ exports.getResetPassword = async (req, res, next) => {
     }
 }
 
-exports.postResetPassword = async (req, res, next) => {
+exports.postChangePassword = async (req, res, next) => {
     const t = await sequelize.transaction()
     try{
+        console.log(req)
+        const forgotPassId = req.params.forgotPassId
         const email = req.body.email
         const newPassword = req.body.newPassword
+        console.log("DATA: ", newPassword)
         if(isStringEmpty(email) || isStringEmpty(newPassword)){
             return res.status(400).json({message: 'Fill in all fields!'})
         }
 
-        const user = await User.findOne({where: {email: email}})
+        const forgotReq = await ForgotPasswordRequest.findOne({where: {id: forgotPassId}})
+        const user = await User.findOne({where: {id: forgotReq.userId}})
         if(user){
             const hashedPassword = bcrypt.hashSync(newPassword, 10)
             const promise1 = user.update({password: hashedPassword}, {transaction: t})
@@ -88,7 +134,8 @@ exports.postResetPassword = async (req, res, next) => {
             Promise.all([promise1, promise2])
             .then(async () => {
                 await t.commit()
-                return res.status(201).json({message: 'password changed succesfully!', success: true})
+                return res.status(201).sendFile('resetPassword.html', {root: 'views'})
+                // return res.status(201).json({message: 'password changed succesfully!', success: true})
             })
             .catch(async (err) => {
                 console.log(err)

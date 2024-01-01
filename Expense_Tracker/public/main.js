@@ -2,7 +2,7 @@ const myForm = document.getElementById('addForm')
 const expList = document.getElementById('expense-list')
 const premiumDiv = document.getElementById('premiumDiv')
 const premiumBtn = document.getElementById('premiumBtn')
-const leaderBorad = document.getElementById('leaderBoard')
+const premiumContainer = document.getElementById('premiumContainer')
 
 myForm.addEventListener('submit', addExpense)
 expList.addEventListener('click', addOrDeleteExpense)
@@ -20,7 +20,7 @@ function parseJwt (token) {
 }
 
 async function domLoad(){
-    leaderBorad.style.display = 'none'
+    premiumContainer.style.display = 'none'
     let total = 0
     const token = localStorage.getItem('token')
 
@@ -28,7 +28,8 @@ async function domLoad(){
     if(parseJwt(token).isPremiumUser){
         premiumBtn.style.display = 'none'
         premiumDiv.innerHTML = `<h2 style="color: gold;">You Are a premium user!</h2>
-                                <button class="btn btn-dark" style="color: gold;" onclick = "showLeaderboard()">Leaderboad</button>`
+                                <button class="btn btn-dark" style="color: gold;" onclick = "showLeaderboard()">Leaderboad</button>
+                                <button class="btn btn-dark" style="color: gold;" onclick = "downloadReport()">Expense Report</button>`
     }
 
     console.log(token)
@@ -180,32 +181,63 @@ async function activateSubscription(e){
 
 async function showLeaderboard(){
     try{
+        domLoad()
         const token = localStorage.getItem('token')
         const response = await axios.get('/premium/showLeaderBoard', {headers: {'Authorization': token}})
         const users = response.data.users
         console.log(users)
-        leaderBorad.style.display = 'block'
-        const tableBody = document.querySelector('#leaderboardTable tbody');
-        tableBody.innerHTML = ''
-        users.forEach(user => {
-            // Create a new row
-            const row = document.createElement('tr');
 
-            // Create cells for each user property
-            const nameCell = document.createElement('td');
-            nameCell.textContent = user.name;
+        premiumContainer.innerHTML =  `
+                                        <div class="container">
+                                            <h2 class="card-header bg-success text-white">Leader Board</h2>
+                                            <table id="leaderboardTable" class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Total Spending</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${users.map(user => `
+                                                        <tr>
+                                                            <td>${user.name}</td>
+                                                            <td style="color: green;">${user.totalSpending}</td>
+                                                        </tr>
+                                                    `).join('')}
+                                                </tbody>
+                                            </table>
+                                        </div>`
+        
+        premiumContainer.style.display = 'block'
+        
+    }catch(err){
+        console.log(err)
+    }
+}
 
-            const totalSpendingCell = document.createElement('td');
-            totalSpendingCell.textContent = user.totalSpending;
-            totalSpendingCell.style.color = 'green'
-
-            // Append cells to the row
-            row.appendChild(nameCell);
-            row.appendChild(totalSpendingCell);
-
-            // Append the row to the table body
-            tableBody.appendChild(row);
-        })
+async function downloadReport(){
+    try{
+        const token = localStorage.getItem('token')
+        const response = await axios.get('/premium/get-report', {headers: {'Authorization': token}})
+        const expenses = response.data.expenses
+        
+        premiumContainer.innerHTML=`<div class="container">
+                                        <h2 class="card-header bg-success text-white">Expense Report</h2>
+                                        <table id="reportTable" class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Category</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Table rows will be dynamically added here -->
+                                            </tbody>
+                                        </table>
+                                    </div>`
+        
+        premiumContainer.style.display = 'block'
+        
     }catch(err){
         console.log(err)
     }

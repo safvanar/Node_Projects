@@ -29,6 +29,8 @@ const ForgotPasswordRequest = require('./models/forgotPasswordRequests');
 
 app.use(express.static('public'))
 
+app.use(express.urlencoded({ extended: false }))
+
 app.use(cors());
 
 app.use(bodyParser.json({ extended: false }));
