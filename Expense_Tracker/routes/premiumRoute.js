@@ -8,5 +8,7 @@ const router = express.Router()
 
 // router.get('/expenses', expenseController.getExpenses)
 router.get('/showLeaderBoard', userAuthentication, premiumController.getLeaderBoard)
+router.get('/get-report', userAuthentication, premiumController.getReport)
+router.get('/getDownloadedFiles', userAuthentication, premiumController.getDownloadedFiles)
 
 module.exports = router

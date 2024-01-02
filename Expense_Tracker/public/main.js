@@ -20,21 +20,36 @@ function parseJwt (token) {
 }
 
 async function domLoad(){
-    premiumContainer.style.display = 'none'
-    let total = 0
-    const token = localStorage.getItem('token')
+    try{
+            premiumContainer.style.display = 'none'
+            let total = 0
+            const token = localStorage.getItem('token')
 
-    // const userStatus = await axios.get(`/user/getStatus`, {headers: {'Authorization': token}})
-    if(parseJwt(token).isPremiumUser){
-        premiumBtn.style.display = 'none'
-        premiumDiv.innerHTML = `<h2 style="color: gold;">You Are a premium user!</h2>
-                                <button class="btn btn-dark" style="color: gold;" onclick = "showLeaderboard()">Leaderboad</button>
-                                <button class="btn btn-dark" style="color: gold;" onclick = "downloadReport()">Expense Report</button>`
-    }
+            // const userStatus = await axios.get(`/user/getStatus`, {headers: {'Authorization': token}})
+            if(parseJwt(token).isPremiumUser){
+                premiumBtn.style.display = 'none'
+                premiumDiv.innerHTML = `<h2 style="color: gold;">You Are a premium user!</h2>
+                                        <button class="btn btn-dark" style="color: gold;" onclick = "showLeaderboard()">Leaderboad</button>
+                                        <button class="btn btn-dark" style="color: gold;" onclick = "downloadReport()">Expense Report</button>`
+                const fileResponse = await axios.get('/premium/getDownloadedFiles', {headers: {'Authorization': token}})
+                const downloadedFiles = fileResponse.data.downloadedFiles
+                premiumContainer.innerHTML= '<h2>Downloaded Files</h2>'
+                let count = 1
+                let newFileList = document.createElement('ul')
+                newFileList.classList.add('list-group')
+                downloadedFiles.forEach((file) => {
+                    let newFile = document.createElement('li')
+                    newFile.classList.add('list-group-item')
+                    newFile.innerHTML = `<a href="${file.fileUrl}">File${count}</a>`
+                    newFileList.appendChild(newFile)
+                    count+=1
+                })
+                premiumContainer.appendChild(newFileList)
+                premiumContainer.style.display='block'
+            }
 
-    console.log(token)
-    axios.get('/expense/get-expenses', {headers: {'Authorization': token}})
-        .then(response => {
+            console.log(token)
+            const response = await axios.get('/expense/get-expenses', {headers: {'Authorization': token}})
             const data = response.data
             const expenses = data.expenses
             document.getElementById('expense-btn').value = "Add expense"
@@ -60,19 +75,20 @@ async function domLoad(){
                 edBtn.innerText="Edit"
                 edBtn.className="btn btn-success btn-sm float-right edit"
                 edBtn.id = expense.id
-            
+                    
                 //appending buttons to the newly created expense item and adding whole item with buttons to the list
 
                 newExpense.appendChild(delBtn)
                 newExpense.appendChild(edBtn)
                 expList.appendChild(newExpense)
                 myForm.reset()
-        })
-        expList.innerHTML += `<h2>Total Expense: <b style="color: red;">${total}</b></h2>`
-    })
-    .catch(err => {
+            })
+            expList.innerHTML += `<h2>Total Expense: <b style="color: red;">${total}</b></h2>`
+            
+    }catch(err){
         console.log(err)
-    })
+        premiumContainer.innerHTML = err
+    }
 }
 
 function addExpense(e){
@@ -219,27 +235,36 @@ async function downloadReport(){
     try{
         const token = localStorage.getItem('token')
         const response = await axios.get('/premium/get-report', {headers: {'Authorization': token}})
-        const expenses = response.data.expenses
+        if(response.status === 200){
+            const a = document.createElement('a')
+            a.href = response.data.fileUrl
+            a.download = 'myexpenses.csv'
+            a.click()
+        }else{
+            throw new Error(response.data.message)
+        }
         
-        premiumContainer.innerHTML=`<div class="container">
-                                        <h2 class="card-header bg-success text-white">Expense Report</h2>
-                                        <table id="reportTable" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Category</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <!-- Table rows will be dynamically added here -->
-                                            </tbody>
-                                        </table>
-                                    </div>`
         
-        premiumContainer.style.display = 'block'
+        // premiumContainer.innerHTML=`<div class="container">
+        //                                 <h2 class="card-header bg-success text-white">Expense Report</h2>
+        //                                 <table id="reportTable" class="table table-striped">
+        //                                     <thead>
+        //                                         <tr>
+        //                                             <th>Date</th>
+        //                                             <th>Category</th>
+        //                                         </tr>
+        //                                     </thead>
+        //                                     <tbody>
+        //                                         <!-- Table rows will be dynamically added here -->
+        //                                     </tbody>
+        //                                 </table>
+        //                             </div>`
         
+        // premiumContainer.style.display = 'block'
+
     }catch(err){
         console.log(err)
+        premiumContainer.innerHTML=err
     }
 }
 

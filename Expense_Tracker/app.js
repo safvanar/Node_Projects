@@ -27,6 +27,8 @@ const Order = require('./models/orders');
 
 const ForgotPasswordRequest = require('./models/forgotPasswordRequests');
 
+const DownloadedFile = require('./models/downloadedFiles')
+
 app.use(express.static('public'))
 
 app.use(express.urlencoded({ extended: false }))
@@ -65,6 +67,9 @@ Order.belongsTo(User)
 
 User.hasMany(ForgotPasswordRequest, { onDelete: 'CASCADE', hooks: true })
 ForgotPasswordRequest.belongsTo(User)
+
+User.hasMany(DownloadedFile, { onDelete: 'CASCADE', hooks: true })
+DownloadedFile.belongsTo(User)
 
 async function initiate(){
     try {

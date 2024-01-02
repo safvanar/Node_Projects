@@ -18,14 +18,33 @@ exports.postAddExpense = async (req, res, next) => {
             return res.status(400).json({message: 'Bad parameters'})
         }
 
-        await user.createExpense({
-            title: title,
-            amount: amount,
-            category: category,
-        }, {transaction: t})
-        await user.update({totalSpending: parseInt(user.totalSpending) + parseInt(amount)}, {transaction: t})
-        await t.commit()
-        res.status(201).redirect('/home')
+        const promise1 = user.createExpense({
+                                    title: title,
+                                    amount: amount,
+                                    category: category,
+                                }, {transaction: t})
+        const promise2 = user.update({totalSpending: parseInt(user.totalSpending) + parseInt(amount)}, {transaction: t})
+
+        //improved code using Promise.all()
+        Promise.all([promise1, promise2])
+        .then(async () => {
+            await t.commit()
+            res.status(201).redirect('/home')
+        })
+        .catch(async (err) => {
+            await t.rollback()
+            throw new Error(err)
+        })
+
+        //This code would have slow down since we were using await for parallel transactions
+        // await user.createExpense({
+        //     title: title,
+        //     amount: amount,
+        //     category: category,
+        // }, {transaction: t})
+        // await user.update({totalSpending: parseInt(user.totalSpending) + parseInt(amount)}, {transaction: t})
+        // await t.commit()
+        // res.status(201).redirect('/home')
     }catch(err){
         await t.rollback()
         res.status(500).json({message: 'server side error'})
