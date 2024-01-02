@@ -13,4 +13,6 @@ router.post('/signup', userController.createUser)
 
 router.get('/getStatus', userAuthentication, userController.getUserStatus)
 
+router.get('/totalExpense', userAuthentication, userController.getTotal)
+
 module.exports = router

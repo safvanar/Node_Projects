@@ -19,10 +19,16 @@ function parseJwt (token) {
     return JSON.parse(jsonPayload);
 }
 
+// Define a variable to keep track of the current page
+let currentPage = 1;
+
+// Define the number of items to display per page
+const itemsPerPage = 5; // Adjust as needed
+
 async function domLoad(){
     try{
             premiumContainer.style.display = 'none'
-            let total = 0
+            // let total = 0
             const token = localStorage.getItem('token')
 
             // const userStatus = await axios.get(`/user/getStatus`, {headers: {'Authorization': token}})
@@ -49,7 +55,7 @@ async function domLoad(){
             }
 
             console.log(token)
-            const response = await axios.get('/expense/get-expenses', {headers: {'Authorization': token}})
+            const response = await axios.get(`/expense/get-expenses?page=${currentPage}&pageSize=${itemsPerPage}` , {headers: {'Authorization': token}})
             const data = response.data
             const expenses = data.expenses
             document.getElementById('expense-btn').value = "Add expense"
@@ -57,7 +63,7 @@ async function domLoad(){
             expList.innerHTML = ''
 
             expenses.forEach(expense => {
-                total += expense.amount
+                // total += expense.amount
                 let newExpense=document.createElement('li')
                 newExpense.className="list-group-item"
                 newExpense.innerHTML=`${expense.title}::<b style="color: red;">${expense.amount}</b>::${expense.category}`
@@ -83,13 +89,34 @@ async function domLoad(){
                 expList.appendChild(newExpense)
                 myForm.reset()
             })
-            expList.innerHTML += `<h2>Total Expense: <b style="color: red;">${total}</b></h2>`
+
+            let total = await axios.get('/user/totalExpense', {headers: {'Authorization': token}})
+
+            // Display pagination information
+            expList.innerHTML += `<div class="pagination mt-2">
+                                    <button class="btn btn-warning" onclick="loadPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                                    <button class="btn btn-success" disabled>Page-${currentPage}</button>
+                                    <button class="btn btn-warning" onclick="loadPage(${currentPage + 1})" ${expenses.length < itemsPerPage ? 'disabled' : ''}>Next</button>
+                                 </div>`;
+
+            expList.innerHTML += `<div class="mt-2 bg-dark">
+                                    <h2 style="color: white;">Total Expense: <b style="color: red;">${total.data.total}</b></h2>
+                                  </div>`
             
     }catch(err){
         console.log(err)
         premiumContainer.innerHTML = err
     }
 }
+
+// Function to load a specific page
+async function loadPage(page) {
+    if (page >= 1) {
+        currentPage = page;
+        await domLoad();
+    }
+}
+
 
 function addExpense(e){
     e.preventDefault()
@@ -267,5 +294,6 @@ async function downloadReport(){
         premiumContainer.innerHTML=err
     }
 }
+
 
 

@@ -70,3 +70,13 @@ exports.getUserStatus = async (req, res, next) => {
         res.status(403).json({message: 'Error fetching user status!'})
     }
 }
+
+exports.getTotal = async (req, res, next) => {
+    try{
+        const total = req.user.totalSpending
+        res.status(201).json({total: total, success: true})
+    }catch(err){
+        console.log(err)
+        res.status(403).json({message: 'Error fetching total!', success: false})
+    }
+}
