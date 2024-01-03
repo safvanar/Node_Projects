@@ -27,6 +27,10 @@ let itemsPerPage = 5;
 
 async function domLoad(){
     try{
+            const rows = localStorage.getItem('rowsPerPage')
+            if(rows){
+                itemsPerPage = rows
+            }
             premiumContainer.style.display = 'none'
             // let total = 0
             const token = localStorage.getItem('token')
@@ -119,6 +123,7 @@ async function domLoad(){
 function updateRowsPerPage() {
     const dropdown = document.getElementById('rowsPerPage');
     itemsPerPage = parseInt(dropdown.value, 10);
+    localStorage.setItem('rowsPerPage', itemsPerPage)
     loadPage(currentPage); // Reload the current page with the new items per page
   }
 
