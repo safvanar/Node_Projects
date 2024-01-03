@@ -23,7 +23,7 @@ function parseJwt (token) {
 let currentPage = 1;
 
 // Define the number of items to display per page
-const itemsPerPage = 5; // Adjust as needed
+let itemsPerPage = 5;
 
 async function domLoad(){
     try{
@@ -93,10 +93,17 @@ async function domLoad(){
             let total = await axios.get('/user/totalExpense', {headers: {'Authorization': token}})
 
             // Display pagination information
-            expList.innerHTML += `<div class="pagination mt-2">
-                                    <button class="btn btn-warning" onclick="loadPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
-                                    <button class="btn btn-success" disabled>Page-${currentPage}</button>
-                                    <button class="btn btn-warning" onclick="loadPage(${currentPage + 1})" ${expenses.length < itemsPerPage ? 'disabled' : ''}>Next</button>
+            expList.innerHTML += `<div class="pagination mt-2 d-flex align-items-center">
+                                    <label for="rowsPerPage">Rows Per Page:</label>
+                                    <select id="rowsPerPage" onchange="updateRowsPerPage()" class="dropdown ml-2">
+                                        <option value="5" ${itemsPerPage === 5 ? 'selected' : ''}>5</option>
+                                        <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10</option>
+                                        <option value="15" ${itemsPerPage === 15 ? 'selected' : ''}>15</option>
+                                        <!-- Add more options as needed -->
+                                    </select>
+                                    <button class="btn btn-warning ml-2" onclick="loadPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                                    <button class="btn btn-success ml-2" disabled>Page-${currentPage}</button>
+                                    <button class="btn btn-warning ml-2" onclick="loadPage(${currentPage + 1})" ${expenses.length < itemsPerPage || expenses.length === 0 ? 'disabled' : ''}>Next</button>
                                  </div>`;
 
             expList.innerHTML += `<div class="mt-2 bg-dark">
@@ -108,6 +115,12 @@ async function domLoad(){
         premiumContainer.innerHTML = err
     }
 }
+
+function updateRowsPerPage() {
+    const dropdown = document.getElementById('rowsPerPage');
+    itemsPerPage = parseInt(dropdown.value, 10);
+    loadPage(currentPage); // Reload the current page with the new items per page
+  }
 
 // Function to load a specific page
 async function loadPage(page) {
