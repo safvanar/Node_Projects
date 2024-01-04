@@ -71,11 +71,13 @@ ForgotPasswordRequest.belongsTo(User)
 User.hasMany(DownloadedFile, { onDelete: 'CASCADE', hooks: true })
 DownloadedFile.belongsTo(User)
 
+const PORT = process.env.PORT
+
 async function initiate(){
     try {
         await sequelize.sync()
-            app.listen(3000, () => {
-            console.log("Server running on port 3000...")
+            app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}...`)
         })
     } catch (error) {
         console.log(error)

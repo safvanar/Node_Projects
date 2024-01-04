@@ -30,7 +30,7 @@ exports.checkUser = async (req, res, next) => {
             }  
         }
         else{
-            res.status(404).json({message: 'username and/or password is incorrect!'})
+            res.status(401).json({message: 'username and/or password is incorrect!'})
         }
     }catch(err){
         res.status(401).json({message: 'username and/or password is incorrect!'})
@@ -76,7 +76,6 @@ exports.getTotal = async (req, res, next) => {
         const total = req.user.totalSpending
         res.status(201).json({total: total, success: true})
     }catch(err){
-        console.log(err)
         res.status(403).json({message: 'Error fetching total!', success: false})
     }
 }
