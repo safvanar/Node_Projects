@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -25,7 +26,7 @@ async function initiate(){
     try {
         await sequelize.sync()
             app.listen(5000, () => {
-            console.log("Server running on port 3000...")
+            console.log("Server running on port 5000...")
         })
     } catch (error) {
         console.log(error)
